@@ -97,10 +97,6 @@ h2 .aclara{text-transform:none;letter-spacing:0;font-weight:400;color:var(--tint
   padding:0;text-decoration:underline;display:none}
 .freset.on{display:inline}
 /* Descarga lo que esta a la vista, no la corrida entera: por eso el numero */
-.fcsv{border:1px solid var(--verde)!important;background:var(--verde-cl)!important;
-  color:#04713a!important;font-size:12px;white-space:nowrap;font-weight:600}
-.fcsv:hover{background:var(--verde)!important;color:#fff!important;border-color:var(--verde)!important}
-.fcsv:disabled{opacity:.45;cursor:not-allowed}
 .sinres{display:none;padding:22px 4px;color:var(--tinta-3);font-size:13px}
 .sinres.on{display:block}
 
@@ -345,7 +341,7 @@ footer b{color:var(--tinta-2)}
 </div></section>
 <h2>Todas las posiciones</h2>
 <div class="filtros">
-<div class="fbusca"><input id="buscar" type="search" placeholder="Buscar empresa, ticker o texto..."><span class="fcuenta" id="fcuenta"></span><button class="freset" id="freset">limpiar filtros</button><button class="fcsv" id="fcsv">Descargar CSV</button></div>
+<div class="fbusca"><input id="buscar" type="search" placeholder="Buscar empresa, ticker o texto..."><span class="fcuenta" id="fcuenta"></span><button class="freset" id="freset">limpiar filtros</button></div>
 <div class="fgrupo"><span class="fetiq">Mercado</span>
 <button data-grupo="mercado" data-valor="todos" aria-pressed="true">Todos</button>
 <button data-grupo="mercado" data-valor="US" aria-pressed="false">Estados Unidos</button>
@@ -1591,7 +1587,6 @@ footer b{color:var(--tinta-2)}
 (function(){
   var DEF={mercado:'todos',materialidad:'todas',categoria:'todas',sentimiento:'todos',texto:''};
   var f=Object.assign({},DEF);
-  var visibles={};
   // Materialidad, categoria y sentimiento son propiedades de la NOTICIA; mercado
   // y texto lo son del PAPEL. Cuando alguno de los primeros esta activo, un papel
   // solo se muestra si le queda al menos una noticia visible.
@@ -1636,12 +1631,10 @@ footer b{color:var(--tinta-2)}
     });
 
     var notasVis=Object.keys(vistas).length;
-    visibles=vistas;                       // lo que se lleva el CSV
     var cta=document.getElementById('fcuenta');
     if(cta) cta.innerHTML = '<b>'+notasVis+'</b> noticia'+(notasVis===1?'':'s')+
                             ' en <b>'+papelesVis+'</b> papel'+(papelesVis===1?'':'es');
-    var csv=document.getElementById('fcsv');
-    if(csv){ csv.textContent='Descargar CSV ('+notasVis+')'; csv.disabled=notasVis===0; }
+
     var sucio = Object.keys(DEF).some(function(k){ return f[k]!==DEF[k]; });
     var rst=document.getElementById('freset'); if(rst) rst.classList.toggle('on', sucio);
     var sr=document.getElementById('sinres'); if(sr) sr.classList.toggle('on', papelesVis===0);
@@ -1671,36 +1664,6 @@ footer b{color:var(--tinta-2)}
   document.querySelectorAll('.papel:not(.vacio) .cab').forEach(function(c){
     c.addEventListener('click',function(){ c.parentNode.classList.toggle('abierto'); });
   });
-
-  // ---------- descarga CSV de lo que esta filtrado ----------
-  var CAB=['Fecha','Tickers','Empresa','Mercado','Categoria','Materialidad','Señal',
-           'Titular','Resumen','Que implica','Medio','Origen','Link'];
-  var CAMPOS=['fecha','tickers','empresas','mercados','categoria','materialidad','senal',
-              'titulo','resumen','implicancia','medio','origen','link'];
-  function celda(v){
-    // Excel corta el campo en el salto de linea si no se escapa
-    return '"' + String(v==null?'':v).replace(/"/g,'""').replace(/\r?\n/g,' ') + '"';
-  }
-  var btn=document.getElementById('fcsv');
-  var crudo=document.getElementById('datos');
-  if(btn && crudo){
-    var D=JSON.parse(crudo.textContent);
-    btn.addEventListener('click',function(){
-      var filas=D.filas.filter(function(r){ return visibles[r.id]; });
-      if(!filas.length) return;
-      var txt=[CAB.map(celda).join(';')].concat(filas.map(function(r){
-        return CAMPOS.map(function(k){ return celda(r[k]); }).join(';');
-      })).join('\r\n');
-      // separador ';' y BOM: es lo que Excel en español espera para abrir el
-      // archivo con las columnas separadas y los acentos bien
-      var blob=new Blob(['\ufeff'+txt], {type:'text/csv;charset=utf-8;'});
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a');
-      a.href=url; a.download='Seguimiento Acciones Vision - '+D.fecha+'.csv';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-    });
-  }
 
   // ---------- PDF de UNA noticia ----------
   // Se llena la ficha oculta y se manda a imprimir con el resto escondido.
