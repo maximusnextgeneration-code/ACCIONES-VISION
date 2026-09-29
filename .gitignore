@@ -1,0 +1,10 @@
+# El motor y los datos de trabajo no van al repositorio publico
+motor/
+data/
+*.xlsx
+universo_vision.json
+LEEME.md
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
