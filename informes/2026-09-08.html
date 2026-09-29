@@ -1336,6 +1336,7 @@ Documento preparado por LATAM ConsultUs para Vision. Cada noticia enlaza a su fu
   // ---------- PDF de UNA noticia ----------
   // Se llena la ficha oculta y se manda a imprimir con el resto escondido.
   // Sale en texto vectorial y con la marca, sin cargar ninguna libreria.
+  var crudo=document.getElementById('datos');
   if(crudo){
     var DD=JSON.parse(crudo.textContent);
     var porId={}; DD.filas.forEach(function(r){ porId[r.id]=r; });
